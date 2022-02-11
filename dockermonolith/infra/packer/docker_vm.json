@@ -1,0 +1,37 @@
+{
+    "builders": [
+        {
+            "type": "yandex",
+            "service_account_key_file": "{{user `service_account_key_file`}}",
+            "folder_id": "{{user `folder_id`}}",
+            "source_image_id": "{{user `source_image_id`}}",
+            "image_name": "reddit-docker-{{timestamp}}",
+            "image_family": "reddit-base",
+            "ssh_username": "ubuntu",
+            "subnet_id": "e9bke0v96uruqqa36rd6",
+            "use_ipv4_nat": true,
+            "disk_size_gb": "{{user `disk_size_gb`}}",
+            "instance_cores": "{{user `instance_cores`}}",
+            "instance_mem_gb": "{{user `instance_mem_gb`}}"
+        }
+    ],
+
+    "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+                "apt -y update",
+                "rm /var/lib/apt/lists/lock /var/cache/apt/archives/lock /var/lib/dpkg/lock*",
+                "apt install -y python-minimal"
+            ],
+            "execute_command": "sudo {{.Path}}"
+        },
+        {
+            "type": "ansible",
+            "playbook_file": "ansible/playbooks/packer_docker.yml",
+            "extra_arguments": ["--tags","ruby"],
+            "ansible_env_vars": [
+                "ANSIBLE_ROLES_PATH={{ pwd }}/ansible/roles"]
+        }
+    ]
+}
