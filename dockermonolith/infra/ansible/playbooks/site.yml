@@ -1,0 +1,6 @@
+- name: Configuration soft for application
+  hosts: docker
+
+  roles:
+    - docker
+    - docker_deploy
