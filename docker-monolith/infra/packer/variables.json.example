@@ -1,0 +1,8 @@
+{
+    "folder_id": "<your_folder_id>",
+    "source_image_id": "<your_source_image_id>",
+    "service_account_key_file": "./packer/files/yc_service.key.json",
+    "disk_size_gb": "20",
+    "instance_cores": "4",
+    "instance_mem_gb": "4"
+}
