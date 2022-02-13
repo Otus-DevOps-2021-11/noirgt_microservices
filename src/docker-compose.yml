@@ -31,7 +31,6 @@ volumes:
 
 networks:
  front_net:
-   name: front_net
    driver: bridge
    driver_opts:
      com.docker.monwork.enable_ipv6: 'false'
@@ -41,7 +40,6 @@ networks:
       - subnet: 10.0.1.0/24
 
  back_net:
-   name: back_net
    driver: bridge
    driver_opts:
      com.docker.monwork.enable_ipv6: 'false'
