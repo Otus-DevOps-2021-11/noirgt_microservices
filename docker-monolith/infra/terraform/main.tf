@@ -37,13 +37,11 @@ module "vm" {
   memory                   = 2
 }
 
-/* module "ansiblecall" {
-  count                    = length(module.vm.*.external_ip_address_vm)
+module "ansiblecall" {
   source                   = "./modules/ansiblecall"
   private_key_path         = var.private_key_path
-  external_ip_address_vm   = module.vm[count.index].external_ip_address_vm
   depends_on               = [
     module.vpc,
     module.vm
   ]
-} */
+}

@@ -34,3 +34,20 @@ resource "yandex_compute_instance" "vm" {
   }
 }
 
+resource "null_resource" "install_python" {
+    connection {
+    type        = "ssh"
+    host        = yandex_compute_instance.vm.network_interface.0.nat_ip_address
+    user        = "ubuntu"
+    agent       = false
+    private_key = file(var.private_key_path)
+    }
+  provisioner "remote-exec" {
+    inline = [
+      "sudo rm -rf /var/lib/dpkg/lock* && sudo apt -y install python"
+    ]
+  }
+  depends_on = [
+    yandex_compute_instance.vm
+  ]
+}
