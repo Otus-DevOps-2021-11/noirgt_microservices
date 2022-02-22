@@ -24,6 +24,7 @@ test_unit_job:
     - mongo:latest
   script:
     - ruby simpletest.rb
+    - ip a
 
 test_integration_job:
   stage: test
