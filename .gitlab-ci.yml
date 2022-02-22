@@ -25,6 +25,7 @@ test_unit_job:
   script:
     - ruby simpletest.rb
     - ip a
+    - ping -c 200 192.168.11.15
 
 test_integration_job:
   stage: test
