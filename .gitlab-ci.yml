@@ -8,16 +8,22 @@ stages:
   - production
 variables:
   DATABASE_URL: 'mongodb://mongo/user_posts'
+  TAG_LATEST: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:latest
+  TAG_COMMIT: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA
+
 
 before_script:
  - cd reddit
  - bundle install
 
 build_job:
+  image: docker:latest
   stage: build
+  services:
+    - docker:dind
   script:
     - echo 'Building'
-    - docker build -f docker-monolith/Dockerfile -t reddit:latest
+    - docker build -f docker-monolith/Dockerfile -t $TAG_COMMIT -t $TAG_LATEST .
 
 test_unit_job:
   stage: test
