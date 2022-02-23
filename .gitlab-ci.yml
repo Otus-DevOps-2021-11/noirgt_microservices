@@ -17,7 +17,6 @@ before_script:
  - bundle install
 
 build_job:
-  image: docker:latest
   stage: build
   services:
     - docker:dind
