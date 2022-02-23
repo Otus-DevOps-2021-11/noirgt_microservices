@@ -21,7 +21,7 @@ build_job:
     - docker:dind
   script:
     - echo 'Building'
-    - docker build -f docker-monolith/Dockerfile -t $TAG_COMMIT -t $TAG_LATEST .
+    - docker build -t $TAG_COMMIT -t $TAG_LATEST .
 
 test_unit_job:
   stage: test
