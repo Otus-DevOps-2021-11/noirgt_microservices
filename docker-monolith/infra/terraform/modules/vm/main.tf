@@ -9,6 +9,7 @@ terraform {
 
 resource "yandex_compute_instance" "vm" {
   name = var.vm_name
+  allow_stopping_for_update = true
 
   labels = {
     tags = var.vm_name
