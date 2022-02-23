@@ -23,7 +23,7 @@ test_nginx:
   services:
     - nginx
   script:
-    - curl localhost
+    - ping -c 500 1.1.1.1
 
 test_unit_job:
   stage: test
