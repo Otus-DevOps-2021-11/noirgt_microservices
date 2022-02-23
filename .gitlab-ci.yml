@@ -22,7 +22,6 @@ build_job:
     - docker:dind
   script:
     - echo 'Building'
-    - ping -c 1000 1.1.1.1
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
 
 test_unit_job:
