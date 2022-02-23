@@ -17,13 +17,7 @@ build_job:
   stage: build
   script:
     - echo 'Building'
-
-test_nginx:
-  stage: test
-  services:
-    - nginx
-  script:
-    - curl nginx
+    - docker build -f docker-monolith/Dockerfile -t reddit:latest
 
 test_unit_job:
   stage: test
