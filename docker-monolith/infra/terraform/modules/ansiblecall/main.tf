@@ -13,7 +13,7 @@ resource "null_resource" "ansible_deploy" {
       environment = {
           ansible_path   = "../ansible"
           invetory       = "inventory.py"
-          playbook       = "playbooks/site.yml"
+          playbook       = "playbooks/${var.playbook}"
       }
     }
 }

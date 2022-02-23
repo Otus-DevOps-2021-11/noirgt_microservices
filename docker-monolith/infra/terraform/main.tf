@@ -25,21 +25,28 @@ module "vpc" {
 }
 
 module "vm" {
-  count                    = 2
+  for_each                 = {
+    "gitlab-ci"    : {"cpu": 2, "memory": 6},
+    "gitlab-runner": {"cpu": 2, "memory": 4},
+    "app-docker"   : {"cpu": 2, "memory": 2},
+    "registry-hub" : {"cpu": 2, "memory": 2}
+  }
+
   source                   = "./modules/vm"
-  vm_name                  = "reddit-vm-${count.index}-docker"
+  vm_name                  = "vm-${each.key}"
   public_key_path          = var.public_key_path
   vm_disk_image            = var.vm_disk_image
   subnet_id                = module.vpc.vm-subnet.id
   private_key_path         = var.private_key_path
 
-  cpu                      = 2
-  memory                   = 2
+  cpu                      = each.value["cpu"]
+  memory                   = each.value["memory"]
 }
 
 module "ansiblecall" {
   source                   = "./modules/ansiblecall"
   private_key_path         = var.private_key_path
+  playbook                 = "gitlab-ci.yml"
   depends_on               = [
     module.vpc,
     module.vm

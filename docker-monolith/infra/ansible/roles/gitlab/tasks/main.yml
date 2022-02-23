@@ -1,5 +1,15 @@
 ---
 # tasks file for docker_deploy
+- name: Create dirs for Gitlab volumes
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /srv/gitlab/config
+    - /srv/gitlab/data
+    - /srv/gitlab/logs
+  become: true
+
 - name: Start a container
   docker_container:
     name: "{{ container_name }}"
