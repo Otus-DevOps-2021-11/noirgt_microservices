@@ -2,16 +2,15 @@ image: docker:latest
 
 stages:
   - build
-  - test
-  - review
-  - stage
-  - production
+  - create_instance
+  - deploy
+  - destroy_instance
 variables:
-  DATABASE_URL: 'mongodb://mongo/user_posts'
+  CI_HARBOR: 'hub.doublespace.ru'
   CI_REGISTRY_IMAGE: 'hub.doublespace.ru'
-  TAG_LATEST: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:latest
-  TAG_COMMIT: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA
-
+  TAG_LATEST: $CI_REGISTRY_IMAGE/infra/reddit:latest
+  TAG_COMMIT: $CI_REGISTRY_IMAGE/infra/reddit:$CI_COMMIT_SHORT_SHA
+  INFRA_PATH: /builds/homework/example/docker-monolith/infra
 
 before_script:
  - cd docker-monolith
@@ -21,32 +20,119 @@ build_job:
   services:
     - docker:dind
   script:
-    - echo 'Building'
+    - docker login -u $HARBOR_LOGIN -p $HARBOR_PASS $CI_HARBOR
     - docker build -t $TAG_COMMIT -t $TAG_LATEST .
+    - docker push $TAG_COMMIT
+    - docker push $TAG_LATEST
 
-test_unit_job:
-  stage: test
-  services:
-    - mongo:latest
+creating_instance:
+  image: 
+    name: hashicorp/terraform:1.1.2
+    entrypoint: 
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+  stage: create_instance
   script:
-    - ruby simpletest.rb
-
-test_integration_job:
-  stage: test
-  script:
-    - echo 'Testing 2'
-
-deploy_job:
-  stage: review
-  script:
-    - echo 'Deploy'
+    - cd infra/terraform
+    - >
+      terraform init
+      -backend-config="endpoint=storage.yandexcloud.net"
+      -backend-config="key=terraform-states/REVIEW/ya-vm-$CI_COMMIT_SHORT_SHA.tfstate"
+      -backend-config="bucket=noirgt-infra-bucket"
+      -backend-config="region=ru-central1"
+      -backend-config="access_key=$TERRA_S3_ACCESS"
+      -backend-config="secret_key=$TERRA_S3_SECRET"
+      -backend-config="skip_region_validation=true"
+      -backend-config="skip_credentials_validation=true"
+    - >
+      mkdir /root/.ssh &&
+      echo "$SSH_PRIVATE_KEY" | tr -d '\r' > /root/.ssh/id_rsa &&
+      chmod 600 /root/.ssh/id_rsa &&
+      ssh-keygen -y -f /root/.ssh/id_rsa > /root/.ssh/id_rsa.pub &&
+    - echo "$TERRA_YA_KEY" | tr -d '\r' > /root/yc_service.key.json
+    - >
+      echo "yes" | terraform apply
+      -var="cloud_id=b1guaauiv9b0002f1n7a"
+      -var="folder_id=b1gibv0ivhcnnsd84u7v"
+      -var="zone=ru-central1-a"
+      -var="region=ru-central1"
+      -var="image_id=fd8uqc9mag1154jh5mc5"
+      -var="vm_disk_image=fd85nhqflqc7der9mauo"
+      -var="public_key_path=/root/.ssh/id_rsa.pub"
+      -var="private_key_path=/root/.ssh/id_rsa"
+      -var="service_account_key_file=/root/yc_service.key.json"
+      -var="subnet_id=e9beq3luvvs4mtknnn0d"
+      -var="network_id=enpf4k2unr9vge37c6mt"
+      -var="vm_name=reddit-$CI_COMMIT_REF_NAME"
+      -var="subnet_id=e9bqt67m0obe7quh4pl7"
+    - ANSIBLE_HOST=$(terraform output | grep external_ip_address_vm | awk 'NR == 2{print$3}' | sed 's/\"//g')
+    - echo -e "[docker]\n$ANSIBLE_HOST\n[docker:vars]\ncontainer_image=$TAG_COMMIT" > inventory
+  rules:
+    - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_BRANCH != "main")
+      when: never
+  artifacts:
+    paths:
+      - docker-monolith/infra/terraform/inventory
   environment:
-    name: dev
-    url: http://dev.example.com
+    name: branch/$CI_COMMIT_REF_NAME
+    url: http://$CI_ENVIRONMENT_SLUG.example.com
 
-branch review:
-  stage: review
-  script: echo "Deploy to $CI_ENVIRONMENT_SLUG"
+deploy_to_instance:
+  image: 
+    name: willhallonline/ansible:latest
+  stage: deploy
+  script:
+    - >
+      mkdir /root/.ssh &&
+      echo "$SSH_PRIVATE_KEY" | tr -d '\r' > /root/.ssh/id_rsa &&
+      chmod 600 /root/.ssh/id_rsa
+    - mkdir /root/.ansible
+    - ln -s $INFRA_PATH/ansible/roles /root/.ansible/
+    - cd infra/ansible
+    - export ANSIBLE_HOST_KEY_CHECKING=False
+    - ansible-playbook -u ubuntu -i $INFRA_PATH/terraform/inventory --extra-vars "container_name=reddit" playbooks/site.yml
+
+delete_instance:
+  image: 
+    name: hashicorp/terraform:1.1.2
+    entrypoint: 
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+  stage: destroy_instance
+  script:
+    - cd infra/terraform
+    - >
+      terraform init
+      -backend-config="endpoint=storage.yandexcloud.net"
+      -backend-config="key=terraform-states/REVIEW/ya-vm-$CI_COMMIT_SHORT_SHA.tfstate"
+      -backend-config="bucket=noirgt-infra-bucket"
+      -backend-config="region=ru-central1"
+      -backend-config="access_key=$TERRA_S3_ACCESS"
+      -backend-config="secret_key=$TERRA_S3_SECRET"
+      -backend-config="skip_region_validation=true"
+      -backend-config="skip_credentials_validation=true"
+    - >
+      mkdir ~/.ssh &&
+      echo "$SSH_PRIVATE_KEY" | tr -d '\r' > /root/.ssh/id_rsa &&
+      chmod 600 /root/.ssh/id_rsa &&
+      ssh-keygen -y -f /root/.ssh/id_rsa > /root/.ssh/id_rsa.pub &&
+    - echo "$TERRA_YA_KEY" | tr -d '\r' > /root/yc_service.key.json
+    - >
+      echo "yes" | terraform destroy
+      -var="cloud_id=b1guaauiv9b0002f1n7a"
+      -var="folder_id=b1gibv0ivhcnnsd84u7v"
+      -var="zone=ru-central1-a"
+      -var="region=ru-central1"
+      -var="image_id=fd8uqc9mag1154jh5mc5"
+      -var="vm_disk_image=fd85nhqflqc7der9mauo"
+      -var="public_key_path=/root/.ssh/id_rsa.pub"
+      -var="private_key_path=/root/.ssh/id_rsa"
+      -var="service_account_key_file=/root/yc_service.key.json"
+      -var="subnet_id=e9beq3luvvs4mtknnn0d"
+      -var="network_id=enpf4k2unr9vge37c6mt"
+      -var="vm_name=reddit-$CI_COMMIT_REF_NAME"
+      -var="subnet_id=e9bqt67m0obe7quh4pl7"
+  when: manual
   environment:
     name: branch/$CI_COMMIT_REF_NAME
     url: http://$CI_ENVIRONMENT_SLUG.example.com
@@ -54,25 +140,3 @@ branch review:
     - branches
   except:
     - master
-
-staging:
-  stage: stage
-  when: manual
-  only:
-    - /^\d+\.\d+\.\d+/
-  script:
-    - echo 'Deploy'
-  environment:
-    name: beta
-    url: http://beta.example.com
-
-production:
-  stage: production
-  when: manual
-  only:
-    - /^\d+\.\d+\.\d+/
-  script:
-    - echo 'Deploy'
-  environment:
-    name: production
-    url: http://example.com
