@@ -14,6 +14,7 @@ variables:
 
 before_script:
  - cd reddit
+ - bundle install
 
 build_job:
   stage: build
