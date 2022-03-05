@@ -4,5 +4,5 @@
   docker_container:
     name: "{{ container_name }}"
     image: "{{ container_image }}"
-    ports: "9292:9292"
+    ports: "80:9292"
   become: true
