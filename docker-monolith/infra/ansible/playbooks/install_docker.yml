@@ -1,0 +1,9 @@
+- name: Configuration soft for application
+  hosts:
+    - docker
+    - ci
+    - runner
+    - hub
+
+  roles:
+    - docker

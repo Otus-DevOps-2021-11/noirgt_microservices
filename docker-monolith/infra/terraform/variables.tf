@@ -32,6 +32,7 @@ variable "image_id" {
 
 variable "subnet_id" {
   description = "Subnet"
+  default     = false
 }
 
 variable "network_id" {
@@ -45,4 +46,29 @@ variable "service_account_key_file" {
 variable "vm_disk_image" {
   description = "Disk image for reddit vm"
   default     = "reddit-vm-base"
+}
+
+variable "vm_name" {
+  description = "Name of VM"
+  default     = false
+}
+
+variable "vm_cpu" {
+  description = "CPU of VM"
+  default     = 2
+}
+
+variable "vm_memory" {
+  description = "Memory of VM"
+  default     = 2
+}
+
+variable "subnet_name" {
+  description = "Name of subnet"
+  default     = "reddit-docker-subnet"
+}
+
+variable "subnet_cidr" {
+  description = "CIDR of subnet"
+  default     = "192.168.8.0/24"
 }

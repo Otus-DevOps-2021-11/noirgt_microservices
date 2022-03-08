@@ -1,0 +1,6 @@
+- name: Configuration soft for application
+  hosts: ci
+
+  roles:
+    - docker
+    - gitlab

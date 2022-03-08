@@ -2,15 +2,14 @@
 # tasks file for docker
 - name: Install packages to allow apt to use a repository over HTTPS
   apt:
-    name: "{{ item }}"
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - python3-pip
     state: present
     update_cache: true
-  with_items:
-    - ca-certificates
-    - curl
-    - gnupg
-    - lsb-release
-    - python3-pip
   become: true
 
 - name: Add an apt's signing key
@@ -29,12 +28,11 @@
 
 - name: Install packages of Docker
   apt:
-    name: "{{ item }}"
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
     state: present
-  with_items:
-    - docker-ce
-    - docker-ce-cli
-    - containerd.io
   become: true
 
 - name: Install docker python package
