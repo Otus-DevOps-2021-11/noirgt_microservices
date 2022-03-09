@@ -28,10 +28,7 @@ module "vpc" {
 
 locals {
   vms                      = {
-    "gitlab-ci"    : {"cpu": 2, "memory": 6},
-    "gitlab-runner": {"cpu": 2, "memory": 4},
-    "app-docker"   : {"cpu": 2, "memory": 2},
-    "registry-hub" : {"cpu": 2, "memory": 2}
+    "docker-host"    : {"cpu": 2, "memory": 2},
   }
 }
 
