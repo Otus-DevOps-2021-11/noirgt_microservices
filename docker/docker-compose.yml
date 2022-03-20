@@ -27,6 +27,11 @@ services:
         aliases:
           - post_host
       monitoring_net:
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
 
   comment:
     image: ${USER_NAME}/comment:${COMMENT_VERSION}
@@ -95,3 +100,4 @@ networks:
      driver: default
      config:
       - subnet: 10.0.2.0/24
+
