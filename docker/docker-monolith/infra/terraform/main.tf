@@ -28,7 +28,7 @@ module "vpc" {
 
 locals {
   vms                      = {
-    "docker-host"    : {"cpu": 2, "memory": 2},
+    "logging-docker"    : {"cpu": 2, "memory": 4},
   }
 }
 
@@ -48,12 +48,12 @@ module "vm" {
   memory                   = each.value["memory"]
 }
 
-/* module "ansiblecall" {
+module "ansiblecall" {
   source                   = "./modules/ansiblecall"
   private_key_path         = var.private_key_path
-  playbook                 = "gitlab-ci.yml"
+  playbook                 = "install_docker.yml"
   depends_on               = [
     module.vpc,
     module.vm
   ]
-} */
+}
