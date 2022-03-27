@@ -4,7 +4,9 @@ import os
 import sys
 
 yc_instance_table = os.popen("~/yandex-cloud/bin/yc compute instance list").read().strip().split("\n")[3:-1]
-yc_instance_map = {}
+yc_instance_map = {
+    "all": {"vars": {"all_cloud_instances": {}}}
+}
 
 for yc_instance in yc_instance_table:
     yc_instance_list = yc_instance.split(" | ")
@@ -16,6 +18,8 @@ for yc_instance in yc_instance_table:
         yc_instance_map[group] = {"hosts": []}
 
     yc_instance_map[group]["hosts"].append(address)
+    yc_instance_map["all"]["vars"]["all_cloud_instances"][hostname] = address
+
 
 json_yc_instance_map = json.dumps(yc_instance_map)
 
