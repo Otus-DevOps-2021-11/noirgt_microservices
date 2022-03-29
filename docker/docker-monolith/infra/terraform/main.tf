@@ -28,7 +28,9 @@ module "vpc" {
 
 locals {
   vms                      = {
-    "docker-host"    : {"cpu": 2, "memory": 2},
+    "kubemaster"      : {"cpu": 2, "memory": 2},
+    "1-kubeworker"    : {"cpu": 2, "memory": 2},
+    "2-kubeworker"    : {"cpu": 2, "memory": 2},
   }
 }
 
@@ -48,12 +50,13 @@ module "vm" {
   memory                   = each.value["memory"]
 }
 
-/* module "ansiblecall" {
+module "ansiblecall" {
+  for_each                 = toset(["kube-dependencies.yml"])
   source                   = "./modules/ansiblecall"
   private_key_path         = var.private_key_path
-  playbook                 = "gitlab-ci.yml"
+  playbook                 = each.key
   depends_on               = [
     module.vpc,
     module.vm
   ]
-} */
+}

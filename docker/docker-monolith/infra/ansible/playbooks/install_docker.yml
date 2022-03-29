@@ -4,6 +4,8 @@
     - ci
     - runner
     - hub
+    - kubemaster
+    - kubeworker
 
   roles:
     - docker
