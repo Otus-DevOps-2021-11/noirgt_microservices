@@ -60,3 +60,23 @@ module "ansiblecall" {
     module.vm
   ]
 }
+
+module "ansiblecall-kubemaster" {
+  for_each                 = toset(["kubernetes/master.yml"])
+  source                   = "./modules/ansiblecall"
+  private_key_path         = var.private_key_path
+  playbook                 = each.key
+  depends_on               = [
+    module.ansiblecall
+  ]
+}
+
+module "ansiblecall-kubeworkers" {
+  for_each                 = toset(["kubernetes/workers.yml"])
+  source                   = "./modules/ansiblecall"
+  private_key_path         = var.private_key_path
+  playbook                 = each.key
+  depends_on               = [
+    module.ansiblecall-kubemaster
+  ]
+}
