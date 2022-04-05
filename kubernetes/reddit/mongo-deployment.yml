@@ -28,4 +28,3 @@ spec:
       volumes:
       - name: mongo-persistent-storage
         emptyDir: {}
-1
