@@ -6,6 +6,7 @@ metadata:
   labels:
     app: reddit
     component: mongo
+    comment-db: "true"
 spec:
   replicas: 1
   selector:

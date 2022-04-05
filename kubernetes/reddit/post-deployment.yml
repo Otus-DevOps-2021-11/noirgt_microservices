@@ -6,6 +6,7 @@ metadata:
   labels:
     app: reddit
     component: post
+    post-db: "true"
 spec:
   replicas: 3
   selector:
@@ -22,3 +23,6 @@ spec:
       containers:
       - image: noirgt/post
         name: post
+        env:
+        - name: POST_DATABASE_HOST
+          value: post-db
