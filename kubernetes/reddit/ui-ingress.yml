@@ -6,6 +6,8 @@ metadata:
 spec:
   rules:
   - http:
+      tls:
+      - secretName: ui-ingress # Подключаем наш сертификат
       paths:
       - path: /*
         pathType: Prefix
