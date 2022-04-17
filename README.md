@@ -62,3 +62,10 @@ noirgt microservices repository
 - Развёрнут Kubernetes в Yandex Cloud;
 - Запущен reddit в Kubernetes;
 - Изучены сущности deployment и service в Kubernetes.
+
+# ДЗ: "Kubernetes. Networks, Storages":
+## Задание 1:
+- Изучена на практике работа LoadBalancer в Kubernetes;
+- Изучен на практике Ingress Controller;
+- Рассмотрено сетевое взаимодействие в Kubernetes;
+- Изучен PersistentVolumes.
