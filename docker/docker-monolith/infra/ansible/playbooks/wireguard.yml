@@ -1,0 +1,40 @@
+- hosts: kubemaster
+  become: true
+  tasks:
+    - name: Install packages for Wireguard
+      ansible.builtin.apt:
+        name:
+          - wireguard-tools
+          - mawk 
+          - grep 
+          - iproute2 
+          - qrencode
+        state: present
+        update_cache: true
+
+    - name: Copy client file for Wireguard
+      ansible.builtin.copy:
+        src: ../wg_client.conf
+        dest: /etc/wireguard/wg_client.conf
+        owner: root
+        group: root
+        mode: u+rw,g-rwx,o-rwx
+
+    - name: Copy client file for Wireguard
+      ansible.builtin.copy:
+        src: ../wg_client.conf
+        dest: /etc/wireguard/wg_client.conf
+        owner: root
+        group: root
+        mode: u+rw,g-rwx,o-rwx
+
+    - name: Enable service for Wireguard
+      ansible.builtin.service:
+        name: wg-quick@wg_client
+        enabled: yes
+
+    - name: Reboot the machine (Wait for 5 min)
+      reboot:
+        reboot_timeout: 300
+
+  

@@ -1,7 +1,7 @@
 - hosts: kubemaster
-  become: yes
   tasks:
     - name: initialize the cluster
+      become: yes
       shell: kubeadm init --pod-network-cidr=10.244.0.0/16 >> cluster_initialized.txt
       args:
         chdir: $HOME
@@ -16,6 +16,7 @@
         mode: 0755
 
     - name: copy admin.conf to user's kube config
+      become: yes
       copy:
         src: /etc/kubernetes/admin.conf
         dest: /home/ubuntu/.kube/config
@@ -29,3 +30,11 @@
       args:
         chdir: $HOME
         creates: pod_network_setup.txt
+
+    - name: Register IP of master node
+      set_fact:
+        master_ip: "{{ ansible_ssh_host }}"
+
+    - name: Copy .kube directory for kubectl
+      shell: "scp -r ubuntu@{{ master_ip }}:/home/ubuntu/.kube ~"
+      delegate_to: 127.0.0.1

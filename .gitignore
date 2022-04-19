@@ -18,3 +18,4 @@ db
 .cache
 .pytest_cache
 .env
+wg_client.conf
